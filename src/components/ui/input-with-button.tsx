@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Input, type InputProps } from '@/components/ui/input';
-import { Button, type ButtonProps } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 interface InputWithButtonProps extends React.HTMLAttributes<HTMLDivElement> {
-  inputProps?: InputProps;
-  buttonProps?: ButtonProps;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  buttonProps?: React.ButtonHTMLAttributes<HTMLButtonElement>;
   buttonContent: React.ReactNode;
 }
 const InputWithButton = React.forwardRef<HTMLDivElement, InputWithButtonProps>(
