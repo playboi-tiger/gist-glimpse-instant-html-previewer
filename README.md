@@ -1,6 +1,6 @@
 # Gist Glimpse
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/playboi-tiger/gist-glimpse-instant-html-previewer)
 
 Instantly preview HTML, CSS, and JavaScript snippets from GitHub Gists in a secure, sandboxed environment. No downloads or local setup required.
 
@@ -86,7 +86,7 @@ bun run deploy
 
 This builds the app and deploys via Wrangler.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/playboi-tiger/gist-glimpse-instant-html-previewer)
 
 ### Prerequisites
 
