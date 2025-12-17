@@ -1,138 +1,131 @@
-// Home page of the app.
-// Currently a demo placeholder "please wait" screen.
-// Replace this file with your actual app UI. Do not delete it to use some other file as homepage. Simply replace the entire contents of this file.
-
-import { useEffect, useMemo, useState } from 'react'
-import { Sparkles } from 'lucide-react'
-
-import { ThemeToggle } from '@/components/ThemeToggle'
-import { HAS_TEMPLATE_DEMO, TemplateDemo } from '@/components/TemplateDemo'
-import { Button } from '@/components/ui/button'
-import { Toaster, toast } from '@/components/ui/sonner'
-
-function formatDuration(ms: number): string {
-  const total = Math.max(0, Math.floor(ms / 1000))
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
-export function HomePage() {
-  const [coins, setCoins] = useState(0)
-  const [isRunning, setIsRunning] = useState(false)
-  const [startedAt, setStartedAt] = useState<number | null>(null)
-  const [elapsedMs, setElapsedMs] = useState(0)
-
-  useEffect(() => {
-    if (!isRunning || startedAt === null) return
-
-    const t = setInterval(() => {
-      setElapsedMs(Date.now() - startedAt)
-    }, 250)
-
-    return () => clearInterval(t)
-  }, [isRunning, startedAt])
-
-  const formatted = useMemo(() => formatDuration(elapsedMs), [elapsedMs])
-
-  const onPleaseWait = () => {
-    setCoins((c) => c + 1)
-
-    if (!isRunning) {
-      // Resume from the current elapsed time
-      setStartedAt(Date.now() - elapsedMs)
-      setIsRunning(true)
-      toast.success('Building your app…', {
-        description: "Hang tight — we're setting everything up.",
-      })
-      return
+import * as React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Github, Sparkles, ArrowRight } from 'lucide-react';
+import { Toaster, toast } from 'sonner';
+import { InputWithButton } from '@/components/ui/input-with-button';
+import { Button } from '@/components/ui/button';
+function parseGistUrl(url: string): string | null {
+  try {
+    const urlObject = new URL(url);
+    if (urlObject.hostname === 'gist.github.com') {
+      const pathParts = urlObject.pathname.split('/').filter(Boolean);
+      return pathParts.pop() || null;
     }
-
-    setIsRunning(false)
-    toast.info('Still working…', {
-      description: 'You can come back in a moment.',
-    })
+  } catch (e) {
+    // Not a valid URL, might be an ID
   }
-
-  const onReset = () => {
-    setCoins(0)
-    setIsRunning(false)
-    setStartedAt(null)
-    setElapsedMs(0)
-    toast('Reset complete')
+  // Regex for Gist ID (32 hex characters)
+  if (/^[a-f0-9]{32}$/.test(url)) {
+    return url;
   }
-
-  const onAddCoin = () => {
-    setCoins((c) => c + 1)
-    toast('Coin added')
-  }
-
+  // Regex for full Gist URL
+  const match = url.match(/gist\.github\.com\/[a-zA-Z0-9_-]+\/([a-f0-9]{32})/);
+  return match ? match[1] : null;
+}
+export function HomePage() {
+  const navigate = useNavigate();
+  const [inputValue, setInputValue] = React.useState('');
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const gistId = parseGistUrl(inputValue.trim());
+    if (gistId) {
+      navigate(`/view/${gistId}`);
+    } else {
+      toast.error('Invalid Gist URL or ID', {
+        description: 'Please paste a valid GitHub Gist URL or just the Gist ID.',
+      });
+    }
+  };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 overflow-hidden relative">
-      <ThemeToggle />
-      <div className="absolute inset-0 bg-gradient-rainbow opacity-10 dark:opacity-20 pointer-events-none" />
-
-      <div className="text-center space-y-8 relative z-10 animate-fade-in w-full">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-primary floating">
-            <Sparkles className="w-8 h-8 text-white rotating" />
+    <div className="relative min-h-screen w-full overflow-hidden bg-zinc-50 dark:bg-zinc-900">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-blue-500/10 to-transparent dark:from-blue-500/5"></div>
+      <header className="absolute top-0 left-0 right-0 z-10 p-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-6 w-6 text-blue-500" />
+            <span className="font-bold text-lg text-zinc-900 dark:text-zinc-50">Gist Glimpse</span>
           </div>
+          <Button variant="ghost" size="icon" asChild>
+            <a href="https://github.com" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+              <Github className="h-5 w-5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200" />
+            </a>
+          </Button>
         </div>
-
-        <div className="space-y-3">
-          <h1 className="text-5xl md:text-7xl font-display font-bold text-balance leading-tight">
-            Creating your <span className="text-gradient">app</span>
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto text-pretty">
-            Your application would be ready soon.
-          </p>
+      </header>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex min-h-screen flex-col items-center justify-center py-24 md:py-32 lg:py-40">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="w-full max-w-2xl text-center"
+          >
+            <h1 className="text-5xl font-bold tracking-tighter text-zinc-900 dark:text-zinc-50 sm:text-6xl md:text-7xl">
+              Instant Previews for GitHub Gists
+            </h1>
+            <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
+              Paste any Gist URL to instantly render HTML, CSS, and JavaScript in a secure, shareable sandbox.
+            </p>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-12 w-full max-w-xl"
+          >
+            <form onSubmit={handleSubmit}>
+              <InputWithButton
+                inputProps={{
+                  type: 'text',
+                  placeholder: 'Paste a Gist URL or ID...',
+                  value: inputValue,
+                  onChange: (e) => setInputValue(e.target.value),
+                }}
+                buttonProps={{
+                  type: 'submit',
+                }}
+                buttonContent={<ArrowRight className="h-5 w-5" />}
+              />
+            </form>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="mt-16 text-center"
+          >
+            <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">How it works</h2>
+            <div className="mt-6 grid grid-cols-1 gap-8 sm:grid-cols-3 max-w-3xl">
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                  <span className="font-bold text-xl">1</span>
+                </div>
+                <h3 className="mt-4 font-medium text-zinc-900 dark:text-zinc-50">Paste URL</h3>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Provide a link to any public GitHub Gist.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                  <span className="font-bold text-xl">2</span>
+                </div>
+                <h3 className="mt-4 font-medium text-zinc-900 dark:text-zinc-50">We Fetch & Fuse</h3>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Our engine finds and combines your code.</p>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+                  <span className="font-bold text-xl">3</span>
+                </div>
+                <h3 className="mt-4 font-medium text-zinc-900 dark:text-zinc-50">View & Share</h3>
+                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">See your code live and share the preview link.</p>
+              </div>
+            </div>
+          </motion.div>
         </div>
-
-        {HAS_TEMPLATE_DEMO ? (
-          <div className="max-w-5xl mx-auto text-left">
-            <TemplateDemo />
-          </div>
-        ) : (
-          <>
-            <div className="flex justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={onPleaseWait}
-                className="btn-gradient px-8 py-4 text-lg font-semibold hover:-translate-y-0.5 transition-all duration-200"
-                aria-live="polite"
-              >
-                Please Wait
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div>
-                Time elapsed:{' '}
-                <span className="font-medium tabular-nums text-foreground">{formatted}</span>
-              </div>
-              <div>
-                Coins:{' '}
-                <span className="font-medium tabular-nums text-foreground">{coins}</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" size="sm" onClick={onReset}>
-                Reset
-              </Button>
-              <Button variant="outline" size="sm" onClick={onAddCoin}>
-                Add Coin
-              </Button>
-            </div>
-          </>
-        )}
-      </div>
-
-      <footer className="absolute bottom-8 text-center text-muted-foreground/80">
-        <p>Powered by Cloudflare</p>
+      </main>
+      <footer className="absolute bottom-4 left-0 right-0 text-center text-sm text-zinc-500">
+        Built with ❤️ at Cloudflare
       </footer>
-
       <Toaster richColors closeButton />
     </div>
-  )
+  );
 }
